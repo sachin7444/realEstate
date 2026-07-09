@@ -2,11 +2,36 @@ import "./singlePage.scss";
 import Slider from "../../components/slider/Slider";
 import Map from "../../components/map/Map";
 import { singlePostData, userData } from "../../lib/dummydata";
-import { useLoaderData } from "react-router-dom";
+import { useNavigate, useLoaderData } from "react-router-dom";
 import DOMPurify from "dompurify";
+import { useContext} from "react";
+import {AuthContext} from "../../context/AuthContext"
+import apiRequest from "../../lib/apiRequest.js"
+import { useState } from "react";
 
 function SinglePage() {
   const post = useLoaderData();
+  const [saved, setSaved] = useState(post.isSaved)
+  const {currentUser} = useContext(AuthContext)
+
+  
+  const handleSave = async() =>{
+    const navigate = useNavigate();
+    setSaved((prev) =>!prev);
+    if(!currentUser){
+      navigate('/login');
+      return;
+    }
+    try{
+      await apiRequest.post("/users/save",{postId:post.id});
+
+    }catch(err){
+      console.log(err);
+      setSaved((prev) =>!prev);
+
+    }
+  };
+
   return (
     <div className="singlePage">
       <div className="details">
@@ -23,8 +48,8 @@ function SinglePage() {
                 <div className="price">$ {singlePostData.price}</div>
               </div>
               <div className="user">
-                <img src={post.user.avatar} alt="" />
-                <span>{post.user.username}</span>
+                <img src={post.user?.avatar || "/noavatar.webp"} alt="" />
+                <span>{post.user?.username}</span>
               </div>
             </div>
             <div className="bottom" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(post.postDetails.desc)}}></div>
@@ -70,7 +95,7 @@ function SinglePage() {
           <div className="sizes">
             <div className="size">
               <img src="/size.png" alt="" />
-              <span>80 sqft</span>
+              <span>{post.postDetails.size} sqft</span>
             </div>
             <div className="size">
               <img src="/bed.png" alt="" />
@@ -114,9 +139,11 @@ function SinglePage() {
               <img src="/chat.png" alt="" />
               Send a Message
             </button>
-            <button>
+            <button onClick={handleSave} style={{
+              backgroundColor: saved ? "#fece51" : "white",
+            }}>
               <img src="/save.png" alt="" />
-              Save the Place
+             {saved ? "Place Saved" : "Save the Place"}
             </button>
           </div>
         </div>
