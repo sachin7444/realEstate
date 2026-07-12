@@ -1,7 +1,20 @@
 import { Link } from "react-router-dom";
 import "./card.scss";
+import { useState } from "react";
+import apiRequest from "../../lib/apiRequest";
 
 function Card({ item }) {
+
+  const [saved, setSaved] = useState(item.isSaved);
+   const handleSave = async () => {
+    setSaved((prev) => !prev);
+    try {
+      await apiRequest.post("/users/save", { postId: item.id });
+    } catch (err) {
+      console.log(err);
+      setSaved((prev) => !prev); // revert on failure
+    }
+  };
   return (
     <div className="card">
       <Link to={`/${item.id}`} className="imageContainer">
@@ -28,7 +41,10 @@ function Card({ item }) {
             </div>
           </div>
           <div className="icons">
-            <div className="icon">
+            <div className="icon" 
+              onClick={handleSave}
+              style={{backgroundColor: saved ? "#fece51" : "white"}}
+            >
               <img src="/save.png" alt="" />
             </div>
             <div className="icon">

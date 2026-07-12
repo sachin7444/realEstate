@@ -10,9 +10,21 @@ import { useState } from "react";
 
 function SinglePage() {
   const post = useLoaderData();
-  const [saved, setSaved] = useState(post.isSaved);
+  const [saved, setSaved] = useState(() => post?.isSaved ?? false);
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  if (!post) {
+    return (
+      <div className="singlePage">
+        <div className="details">
+          <div className="wrapper">
+            <p>Post not found or still loading.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     setSaved((prev) => !prev);
@@ -32,7 +44,7 @@ function SinglePage() {
     <div className="singlePage">
       <div className="details">
         <div className="wrapper">
-          <Slider images={post.images} />
+          <Slider images={post.images ?? []} />
           <div className="info">
             <div className="top">
               <div className="post">
@@ -108,7 +120,7 @@ function SinglePage() {
               <div className="featureText">
                 <span>School</span>
                 <p>
-                  {Number(post.postDetails?.school) > 999
+                  {Number(post.postDetails?.school || 0) > 999
                     ? Number(post.postDetails?.school) / 1000 + "km"
                     : (post.postDetails?.school || 0) + "m"}{" "}
                   away
